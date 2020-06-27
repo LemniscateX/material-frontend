@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {fetchMaterialList, searchMaterial} from '../../api/api';
-import {Table, Input} from "antd";
+import {Table, Input, Button, InputNumber} from "antd";
 
 const {Search} = Input;
 
@@ -9,22 +9,24 @@ const MaterialPage = ({page, limit}) => {
         materials: [],
         page: page,
         totalCount: 0,
+        operating: false,
+        toBeOut: {},
     });
 
     useEffect(() => {
         fetchMaterialList(page, limit).then(({materials, totalCount}) => {
-            setState({materials: materials, page: page, totalCount: totalCount});
+            setState({operating: false, toBeOut: {}, materials: materials, page: page, totalCount: totalCount});
         })
     }, [setState, page, limit]);
 
     const search = (text) => {
         if (text.length === 0) {
             fetchMaterialList(page, limit).then(({materials, totalCount}) => {
-                setState({materials: materials, page: page, totalCount: totalCount});
+                setState({...state, materials: materials, page: page, totalCount: totalCount});
             });
         } else {
             searchMaterial(text, page, limit).then(({items, totalCount}) => {
-                setState({materials: items, page: page, totalCount: totalCount});
+                setState({...state, materials: items, page: page, totalCount: totalCount});
             });
         }
     }
@@ -35,7 +37,16 @@ const MaterialPage = ({page, limit}) => {
             dataIndex: 'name',
             key: 'name',
         },
-        {
+        state.operating ? {
+            title: 'Amount',
+            dataIndex: 'amount',
+            key: 'amount',
+            render: (_, record) => <InputNumber min={0} max={record.amount} defaultValue={0} onChange={(v) => {
+                let toBeOut = state.toBeOut;
+                toBeOut[record.name] = v;
+                setState({...state, toBeOut: toBeOut});
+            }} value={state.toBeOut[record.name] || 0}/>
+        } : {
             title: 'Amount',
             dataIndex: 'amount',
             key: 'amount',
@@ -80,30 +91,53 @@ const MaterialPage = ({page, limit}) => {
     }
 
     return (<>
+            <Button type={"primary"} onClick={() => {
+                setState({...state, operating: !state.operating});
+            }}>out</Button>
             <Search
                 allowClear
                 placeholder="search"
-                // onSearch={pattern => {
-                //     if (pattern && pattern.length > 0) {
-                //         searchMaterial(pattern, page, limit).then(({items, totalCount}) => {
-                //             setState({materials: items, page: page, totalCount: totalCount});
-                //         });
-                //     } else {
-                //         fetchMaterialList(page, limit).then(({materials, totalCount}) => {
-                //             setState({materials: materials, page: page, totalCount: totalCount});
-                //         });
-                //     }
-                // }}
                 onChange={debounceSearch(300)}
             />
-            <Table columns={columns} dataSource={state.materials}
+            <Table rowSelection={state.operating ? {
+                selectedRowKeys:
+                    state.materials.filter((v) => {
+                        if (state.toBeOut[v.name]) {
+                            return state.toBeOut[v.name] === v.amount;
+                        } else {
+                            return false;
+                        }
+                    }).map((v) => v.name),
+                onSelect: (record) => {
+                    let toBeOut = state.toBeOut;
+                    if (toBeOut[record.name]) {
+                        toBeOut[record.name] = undefined;
+                    } else {
+                        toBeOut[record.name] = record.amount;
+                    }
+                    setState({...state, toBeOut: toBeOut});
+                },
+                onSelectAll: (all) => {
+                    let toBeOut = state.toBeOut;
+                    if (all) {
+                        state.materials.forEach((r) => {
+                            toBeOut[r.name] = r.amount;
+                        });
+                    } else {
+                        state.materials.forEach((r) => {
+                            toBeOut[r.name] = undefined;
+                        });
+                    }
+                    setState({...state, toBeOut: toBeOut});
+                }
+            } : null} columns={columns} dataSource={state.materials}
                    pagination={{
                        pageSize: limit,
                        current: state.page,
                        total: state.totalCount,
                        onChange: (page) => {
                            fetchMaterialList(page, limit).then(({materials, totalCount}) => {
-                               setState({materials: materials, page: page, totalCount: totalCount});
+                               setState({...state, materials: materials, page: page, totalCount: totalCount});
                            })
                        }
                    }}/>

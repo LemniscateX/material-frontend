@@ -35,7 +35,11 @@ export const fetchMaterialList = async (page, limit) => {
     });
     const data = await resp.json();
     checkLoginStatus(data);
-    return {materials: data.data, totalCount: data.totalCount};
+    return {
+        materials: data.data.map((m) => {
+            return {...m, key: m.name};
+        }), totalCount: data.totalCount
+    };
 }
 
 export const fetchHistoryList = async (page, limit) => {
@@ -48,7 +52,11 @@ export const fetchHistoryList = async (page, limit) => {
     });
     const data = await resp.json();
     checkLoginStatus(data);
-    return {histories: data.data, totalCount: data.totalCount};
+    return {
+        histories: data.data.map((h) => {
+            return {...h, key: h.id};
+        }), totalCount: data.totalCount
+    };
 }
 
 export const login = async (username, password) => {
@@ -83,7 +91,11 @@ export const searchMaterial = async (pattern, page, limit) => {
     });
     const data = await resp.json();
     checkLoginStatus(data);
-    return {items: data.data, totalCount: data.totalCount};
+    return {
+        items: data.data.map((m) => {
+            return {...m, key: m.name};
+        }), totalCount: data.totalCount
+    };
 }
 
 export const fetchUserList = async (page, limit) => {
@@ -96,5 +108,9 @@ export const fetchUserList = async (page, limit) => {
     });
     const data = await resp.json();
     checkLoginStatus(data);
-    return {users: data.data, totalCount: data.totalCount};
+    return {
+        users: data.data.map((u) => {
+            return {...u, key: u.username};
+        }), totalCount: data.totalCount
+    };
 }
