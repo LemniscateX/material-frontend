@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {fetchMaterialList, outMaterials, searchMaterial} from '../../api/api';
-import {Table, Input, Button, InputNumber} from "antd";
+import {Table, Input, Button, InputNumber, Modal, Form, Select,} from "antd";
 
 const {Search} = Input;
+const {Option} = Select;
 
 const MaterialPage = ({page, limit}) => {
     const [state, setState] = useState({
@@ -10,12 +11,20 @@ const MaterialPage = ({page, limit}) => {
         page: page,
         totalCount: 0,
         operating: false,
+        adding: false,
         toBeOut: {},
     });
 
     useEffect(() => {
         fetchMaterialList(page, limit).then(({materials, totalCount}) => {
-            setState({operating: false, toBeOut: {}, materials: materials, page: page, totalCount: totalCount});
+            setState({
+                operating: false,
+                adding: false,
+                toBeOut: {},
+                materials: materials,
+                page: page,
+                totalCount: totalCount
+            });
         })
     }, [setState, page, limit]);
 
@@ -90,7 +99,102 @@ const MaterialPage = ({page, limit}) => {
         }
     }
 
+    const layout = {
+        labelCol: {
+            span: 5,
+        },
+        wrapperCol: {
+            span: 16,
+        },
+    };
+
+    const tailLayout = {
+        wrapperCol: {
+            offset: 8,
+            span: 16,
+        },
+    };
+
     return (<>
+            <Button onClick={() => {
+                setState({...state, adding: !state.adding});
+            }}>add</Button>
+            <Modal
+                visible={state.adding}
+                title="Add Form"
+                onOk={() => {
+
+                }}
+                onCancel={() => {
+                    setState({...state, adding: !state.adding});
+                }}
+                footer={null}
+            >
+                <Form
+                    {...layout}
+                    name="basic"
+                    onFinish={() => {
+
+                    }}
+                >
+                    <Form.Item
+                        label="Name"
+                        name="name"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input stuff name!',
+                            },
+                        ]}
+                    >
+                        <Input/>
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Amount"
+                        name="amount"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input stuff amount!',
+                            },
+                        ]}
+                    >
+                        <InputNumber min={0}/>
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Place"
+                        name="place"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please select stuff place!',
+                            },
+                        ]}
+                    >
+                        <Select
+                            allowClear
+                        >
+                            <Option value="place1">Place 1</Option>
+                            <Option value="place2">Place 2</Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Info"
+                        name="info"
+                    >
+                        <Input/>
+                    </Form.Item>
+
+                    <Form.Item {...tailLayout}>
+                        <Button type="primary" htmlType="submit">
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
             <Button onClick={() => {
                 setState({...state, operating: !state.operating});
             }}>select</Button>
