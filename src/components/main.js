@@ -10,6 +10,7 @@ import {
 import MaterialPage from './subpage/materials';
 import HistoryPage from './subpage/history';
 import UserPage from "./subpage/user";
+import {logout} from "../api/api";
 
 const {Header, Sider, Content} = Layout;
 
@@ -51,8 +52,11 @@ const MainPage = ({username, isAdmin}) => {
                     {username}
 
                     <Button type={"primary"} onClick={() => {
-                        localStorage.removeItem('user');
-                        window.location.reload();
+                        logout().then((resp) => {
+                            if (resp.ok) {
+                                window.location.reload();
+                            }
+                        })
                     }}>Log out</Button>
                 </Header>
                 <Content

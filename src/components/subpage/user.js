@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {fetchHistoryList, fetchUserList} from '../../api/api';
+import {fetchUserList} from '../../api/api';
 import {Table} from "antd";
 
 const UserPage = ({page, limit}) => {
@@ -35,7 +35,7 @@ const UserPage = ({page, limit}) => {
                    current: state.page,
                    total: state.totalCount,
                    onChange: (page) => {
-                       fetchHistoryList(page, limit).then(({users, totalCount}) => {
+                       fetchUserList(page, limit).then(({users, totalCount}) => {
                            setState({users: users, page: page, totalCount: totalCount});
                        })
                    }

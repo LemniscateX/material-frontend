@@ -81,6 +81,20 @@ export const login = async (username, password) => {
     return data;
 }
 
+export const logout = async () => {
+    const resp = await fetch(`${URL}/logout`, {
+        method: 'POST',
+        headers: {
+            'Authorization': getLocalToken(),
+        }
+    })
+    const data = await resp.json();
+    if (data.ok) {
+        localStorage.removeItem('user');
+    }
+    return data;
+}
+
 export const searchMaterial = async (pattern, page, limit) => {
     const p = page || 1;
     const l = limit || 5;
@@ -96,6 +110,27 @@ export const searchMaterial = async (pattern, page, limit) => {
             return {...m, key: m.name};
         }), totalCount: data.totalCount
     };
+}
+
+export const outMaterials = async (materials) => {
+    let arr = [];
+    for (let [key, value] of Object.entries(materials)) {
+        if (value !== 0) {
+            arr.push({"name": key, "amount": value});
+        }
+    }
+    const resp = await fetch(`${URL}/store/out`, {
+        method: 'POST',
+        headers: {
+            'Authorization': getLocalToken(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            list: arr
+        })
+    });
+    const data = await resp.json();
+    return data;
 }
 
 export const fetchUserList = async (page, limit) => {

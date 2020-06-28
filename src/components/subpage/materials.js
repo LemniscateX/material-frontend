@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {fetchMaterialList, searchMaterial} from '../../api/api';
+import {fetchMaterialList, outMaterials, searchMaterial} from '../../api/api';
 import {Table, Input, Button, InputNumber} from "antd";
 
 const {Search} = Input;
@@ -91,9 +91,28 @@ const MaterialPage = ({page, limit}) => {
     }
 
     return (<>
-            <Button type={"primary"} onClick={() => {
+            <Button onClick={() => {
                 setState({...state, operating: !state.operating});
-            }}>out</Button>
+            }}>select</Button>
+            {state.operating && <Button type={"primary"} onClick={() => {
+                outMaterials(state.toBeOut).then((resp) => {
+                    if (resp.ok) {
+                        //    TODO: deal with message alert
+                        state.toBeOut = {};
+                        fetchMaterialList(page, limit).then(({materials, totalCount}) => {
+                            setState({
+                                ...state,
+                                operating: false,
+                                materials: materials,
+                                page: page,
+                                totalCount: totalCount
+                            });
+                        });
+                    } else {
+                        //    TODO: deal with message alert
+                    }
+                });
+            }}>out</Button>}
             <Search
                 allowClear
                 placeholder="search"
@@ -110,8 +129,8 @@ const MaterialPage = ({page, limit}) => {
                     }).map((v) => v.name),
                 onSelect: (record) => {
                     let toBeOut = state.toBeOut;
-                    if (toBeOut[record.name]) {
-                        toBeOut[record.name] = undefined;
+                    if (toBeOut[record.name] && toBeOut[record.name] === record.amount) {
+                        delete toBeOut[record.name];
                     } else {
                         toBeOut[record.name] = record.amount;
                     }
