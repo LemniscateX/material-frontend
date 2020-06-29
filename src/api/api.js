@@ -133,6 +133,27 @@ export const outMaterials = async (materials) => {
     return data;
 }
 
+export const inMaterial = async (name, amount, place, info) => {
+    const resp = await fetch(`${URL}/store/in`, {
+        method: 'POST',
+        headers: {
+            'Authorization': getLocalToken(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: name,
+            amount: amount,
+            operator: getLocalUser().username,
+            place: place,
+            info: info,
+            ctime: new Date(),
+            utime: new Date()
+        })
+    });
+    const data = await resp.json();
+    return data;
+}
+
 export const fetchUserList = async (page, limit) => {
     const p = page || 1;
     const l = limit || 5;

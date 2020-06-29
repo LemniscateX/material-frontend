@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {fetchMaterialList, outMaterials, searchMaterial} from '../../api/api';
-import {Table, Input, Button, InputNumber, Modal, Form, Select,} from "antd";
+import {fetchMaterialList, inMaterial, outMaterials, searchMaterial} from '../../api/api';
+import {Table, Input, Button, InputNumber, Modal, Form, Select, message} from "antd";
 
 const {Search} = Input;
 const {Option} = Select;
@@ -115,26 +115,38 @@ const MaterialPage = ({page, limit}) => {
         },
     };
 
+    const [form] = Form.useForm();
+
     return (<>
             <Button onClick={() => {
                 setState({...state, adding: !state.adding});
             }}>add</Button>
             <Modal
                 visible={state.adding}
+                centered
                 title="Add Form"
-                onOk={() => {
-
-                }}
                 onCancel={() => {
                     setState({...state, adding: !state.adding});
+                    form.resetFields();
                 }}
                 footer={null}
             >
                 <Form
                     {...layout}
                     name="basic"
-                    onFinish={() => {
-
+                    form={form}
+                    onFinish={(data) => {
+                        inMaterial(data.name, data.amount, data.place, data.info).then((resp) => {
+                            if (resp.ok) {
+                                message.success("In successfully");
+                                form.resetFields();
+                                fetchMaterialList(page, limit).then(({materials, totalCount}) => {
+                                    setState({...state, adding: false, materials: materials, page: page, totalCount: totalCount});
+                                });
+                            } else {
+                                message.error(`${resp.err}`);
+                            }
+                        })
                     }}
                 >
                     <Form.Item
@@ -160,7 +172,7 @@ const MaterialPage = ({page, limit}) => {
                             },
                         ]}
                     >
-                        <InputNumber min={0}/>
+                        <InputNumber min={1}/>
                     </Form.Item>
 
                     <Form.Item
@@ -201,7 +213,7 @@ const MaterialPage = ({page, limit}) => {
             {state.operating && <Button type={"primary"} onClick={() => {
                 outMaterials(state.toBeOut).then((resp) => {
                     if (resp.ok) {
-                        //    TODO: deal with message alert
+                        message.success("Out successfully");
                         state.toBeOut = {};
                         fetchMaterialList(page, limit).then(({materials, totalCount}) => {
                             setState({
@@ -213,7 +225,7 @@ const MaterialPage = ({page, limit}) => {
                             });
                         });
                     } else {
-                        //    TODO: deal with message alert
+                        message.error(`${resp.err}`);
                     }
                 });
             }}>out</Button>}
