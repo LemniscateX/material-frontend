@@ -45,6 +45,8 @@ const MaterialPage = ({page, limit}) => {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            sortDirections: ['descend', 'ascend'],
+            sorter: (a, b) => a.name.localeCompare(b.name),
         },
         state.operating ? {
             title: 'Amount',
@@ -59,26 +61,31 @@ const MaterialPage = ({page, limit}) => {
             title: 'Amount',
             dataIndex: 'amount',
             key: 'amount',
+            sorter: (a, b) => a.amount - b.amount,
         },
         {
             title: 'Operator',
             dataIndex: 'operator',
             key: 'operator',
+            sorter: (a, b) => a.operator.localeCompare(b.operator),
         },
         {
             title: 'Place',
             dataIndex: 'place',
             key: 'place',
+            sorter: (a, b) => a.place.localeCompare(b.place),
         },
         {
             title: 'Create Time',
             dataIndex: 'ctime',
             key: 'ctime',
+            sorter: (a, b) => a.ctime.localeCompare(b.ctime),
         },
         {
             title: 'Update Time',
             dataIndex: 'utime',
             key: 'utime',
+            sorter: (a, b) => a.utime.localeCompare(b.utime),
         },
         {
             title: 'Info',
